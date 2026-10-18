@@ -438,7 +438,7 @@ const NovelDetail = () => {
               return b.sort - a.sort;
             }
           }).map((d: any, i: number, array: any[]) => <div key={d.id} onClick={() => handleClick(d.NCID)}>
-                  <p className={`border border-solid border-gray-400 rounded-md px-2 my-1 
+                  <p className={`border border-solid border-gray-400 rounded-md px-2 my-1
                        ${readNCID === d.NCID ? "bg-og text-white" : readHistory[nid]?.includes(d.NCID) ? "bg-white text-og" : ""}`}>
                     {sortOrder === "asc" ? i + 1 : array.length - i}. {d.title}
                     {d.new && <span className={`text-orange-500 ml-3 ${readNCID === d.NCID ? "text-white" : ""}`}>

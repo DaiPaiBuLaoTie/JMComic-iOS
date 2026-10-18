@@ -135,7 +135,7 @@ const gamesSlice = createSlice({
     }
   },
   extraReducers: builder => {
-    // createAsyncFeature(FETCH_GAMES_LIST_THUNK, "gamesList")(builder); 
+    // createAsyncFeature(FETCH_GAMES_LIST_THUNK, "gamesList")(builder);
     createAsyncFeature(FETCH_BANNERS_THUNK, "bannerList")(builder);
     createAsyncFeature(FETCH_CATEGORIES_THUNK, "categories")(builder);
   }

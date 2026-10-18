@@ -301,7 +301,7 @@ const AchievementList = (props: any) => {
           {isLoading ? <div className="mx-auto">
               <img src="/images/loading.gif" alt="loading" width="80px" />
             </div> : <ul className="bg-defaultBg grid grid-cols-4 text-center px-1 overflow-hidden dark:bg-bbk dark:text-tgy">
-              {tasksList.all?.length > 0 && tasksList.all.map((d: any) => <li key={d.id} className={`border border-solid border-[#aaa] flex flex-col justify-center items-center h-40 p-4 
+              {tasksList.all?.length > 0 && tasksList.all.map((d: any) => <li key={d.id} className={`border border-solid border-[#aaa] flex flex-col justify-center items-center h-40 p-4
                       ${d.done ? "bg-white dark:bg-bbk" : ""}
                       `} onClick={() => select.edit && select.type === "title" && setSelect({
             ...select,

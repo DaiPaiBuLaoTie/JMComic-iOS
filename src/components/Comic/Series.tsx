@@ -41,7 +41,7 @@ const Series = (props: any) => {
             }));
             closeExpress();
           }}>
-                        <p className={`flex border-[1px] border-solid border-[#bbb] rounded-md p-3 
+                        <p className={`flex border-[1px] border-solid border-[#bbb] rounded-md p-3
                             ${seriesGroups.subEpisode === item.sort ? "bg-og text-white" : readHistory[queryId]?.includes(item.id) ? "bg-white text-og" : ""}
                                 `}>
                           {t("detail.episode_prefix")}

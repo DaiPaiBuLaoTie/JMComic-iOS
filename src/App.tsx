@@ -161,7 +161,7 @@ const App = () => {
             <Route path="/novels/detail/read" element={<NovelRead />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<ErrorPage />} />
-            
+
           </Routes>
         </Suspense>
       </div>

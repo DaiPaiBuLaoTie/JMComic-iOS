@@ -191,7 +191,7 @@ const DialogModal = (props: any) => {
           {dialogOpen.imageSource && <>
               <DialogContent dividers>
                 <Typography gutterBottom className="grid grid-cols-4 gap-4 p-2 text-white text-center">
-                  {Array.isArray(setting.app_shunts) && setting.app_shunts.map((d: any) => <span key={d.key} className={`border-[1px] border-og py-3 rounded 
+                  {Array.isArray(setting.app_shunts) && setting.app_shunts.map((d: any) => <span key={d.key} className={`border-[1px] border-og py-3 rounded
                     ${(Number(app_img_shunt) || 1) === d.key ? "bg-og" : ""}`} onClick={e => {
               handleChangeImageSource(d.key.toString());
               handleClose(e);
@@ -208,7 +208,7 @@ const DialogModal = (props: any) => {
             </>}
           {dialogOpen.readSource && <DialogContent>
               <></>
-              {Array.isArray(readImgSource) && readImgSource.map((d: any) => <Button key={d.key} className={`w-full text-white rounded border-solid border-2 border-og mt-4 
+              {Array.isArray(readImgSource) && readImgSource.map((d: any) => <Button key={d.key} className={`w-full text-white rounded border-solid border-2 border-og mt-4
                    ${Number(app_img_shunt) === d.key ? "bg-og" : ""}`} onClick={e => {
           handleChangeImageSource(d.key.toString());
           handleClose(e);

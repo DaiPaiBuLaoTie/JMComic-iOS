@@ -762,8 +762,8 @@ const MemberModal = (props: any) => {
         fontSize: 14
       }}>
             {Array.isArray(CommonQ[2].list) && CommonQ[2].list.map(d => <div key={d.type}>
-                  <span className={`p-1 font-bold 
-                      ${d.type === "永久網域" && "bg-[#f29d13]"} 
+                  <span className={`p-1 font-bold
+                      ${d.type === "永久網域" && "bg-[#f29d13]"}
                       ${d.type === "發布頁" && "bg-og"}
                        ${d.type === "聊天規範" && "bg-[#fcf91e]"}`}>
                     {d.name}
