@@ -1,0 +1,12 @@
+{
+  "sourceVersion": "2.1.11",
+  "sourceApkSha256": "4a36ec11089eb04972d6f833f0047a003a5152c384cabdc7c249ff4268f9d3d7",
+  "environment": {
+    "REACT_APP_VERSION": "2.1.11",
+    "REACT_APP_HOST": "https://rup4a04-c02.tos-cn-hongkong.bytepluses.com/newsvr-2025.txt",
+    "REACT_APP_HOST_BACKUP": "",
+    "REACT_APP_HOST_BACKUP_SECOND": "",
+    "REACT_APP_HOST_BACKUP_CODE": "X+bnzYIcwF6C7Rd3T7njPM0aeKgOoB+o/+lwS/klMzdv/yrVPk0UikahXv/MGxHqaSCwOCfGQjX0QpMpSxvr4+vsg/4ohUY8jspsJ7gSoQU5ANBMM99J2WtKxGgIBLq9PjCaS/34KK9HSiLJdaXz40oGSEHkBl8L0tTfPRC+dmPlp2CJ/97anZkSqForX+hTFgVoS0BZl/gXUQdF2njjAjgJwg13qbTJd3QB0CExaztlrC1Z1QGhXNjxM0Zk5v8i8JoPtTe7LWW55r96oLJrDOG60uspZxlV+Jp3FOdRXFH++Mann1Vo88iv9kbTa1f1FkaUCEgPpxNKmnCpnNUhNgCZExIlg7RcQQ6Ru+ys1D4+GAhA3Z1gUDMsYIit/bD8H30ZoBip59iW0Nx4haPYM5Pb9GyYRAkIJfQRP46w1JQXMPir0MCxMnvFahb0xzOULRx+WBrOe/oMKD1Dsohhxw==",
+    "REACT_APP_COMIC_WEB_URL": "https://18comic.vip"
+  }
+}

@@ -1,0 +1,110 @@
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { getApiEndpoint } from "../api/ApiEndpointUtil";
+import HttpUtil from "../api/HttpUtil";
+import { GET_ADS, GET_COVER_LIST, GET_LATEST_LIST, GET_MAIN_LIST, GET_MORE_LIST } from "../reducers/mainFeature";
+export const FETCH_MAIN_THUNK = createAsyncThunk("main/fetch", async (_, {
+  dispatch,
+  rejectWithValue
+}) => {
+  try {
+    const url = getApiEndpoint("API_COMIC_PROMOTE");
+    return HttpUtil.fetchGet(url, {}, (response: any) => {
+      if (response.code === 200) {
+        dispatch(GET_MAIN_LIST(response));
+      }
+    }, (error: any) => {
+      return new Error(error);
+    });
+  } catch (error) {
+    return rejectWithValue(error instanceof Error ? error.message : "數據獲取失敗");
+  }
+});
+export const FETCH_LATEST_THUNK = createAsyncThunk("latest/fetch", async (page: number, {
+  dispatch,
+  rejectWithValue
+}) => {
+  try {
+    const url = getApiEndpoint("API_COMIC_LATEST");
+    return HttpUtil.fetchGet(url, {
+      page
+    }, (response: any) => {
+      if (response.code === 200) {
+        dispatch(GET_LATEST_LIST(response));
+      }
+    }, (error: any) => {
+      return new Error(error);
+    });
+  } catch (error) {
+    return rejectWithValue(error instanceof Error ? error.message : "數據獲取失敗");
+  }
+});
+export const FETCH_MORE_THUNK = createAsyncThunk("more/fetch", async (params: {
+  id: string;
+  page: number;
+}, {
+  dispatch,
+  rejectWithValue
+}) => {
+  try {
+    const url = getApiEndpoint("API_COMIC_PROMOTE_LIST");
+    return HttpUtil.fetchGet(url, params, (response: any) => {
+      if (response.code === 200) {
+        dispatch(GET_MORE_LIST(response.data));
+      }
+    }, (error: any) => {
+      return new Error(error);
+    });
+  } catch (error) {
+    return rejectWithValue(error instanceof Error ? error.message : "數據獲取失敗");
+  }
+});
+export const FETCH_SER_MORE_THUNK = createAsyncThunk("serializationMore/fetch", async (params: {
+  type?: string;
+  date?: number;
+  page?: number;
+}, {
+  dispatch,
+  rejectWithValue
+}) => {
+  try {
+    let res: Record<string, any> = {};
+    const url = getApiEndpoint("API_COMIC_SER_MORE_LIST");
+    await HttpUtil.fetchGet(url, params, (response: any) => {
+      if (response.code === 200) {
+        res = response;
+        dispatch(GET_MORE_LIST(response.data));
+      }
+    }, (error: any) => {
+      return new Error(error);
+    });
+    return res.data;
+  } catch (error) {
+    return rejectWithValue(error instanceof Error ? error.message : "數據獲取失敗");
+  }
+});
+export const FETCH_COIN_BUY_THUNK = createAsyncThunk("coinBuy/fetch", async (id: string, {
+  dispatch,
+  rejectWithValue
+}) => {
+  try {
+    let res: Record<string, any> = {};
+    const url = getApiEndpoint("API_COIN_BUY_COMICS");
+    await HttpUtil.fetchPost(url, {
+      id
+    }, (response: any) => {
+      if (response.code === 200) {
+        res = response;
+      }
+    }, (error: any) => {
+      return new Error(error);
+    });
+    return res.data;
+  } catch (error) {
+    return rejectWithValue(error instanceof Error ? error.message : "數據獲取失敗");
+  }
+});
+export const FETCH_COVER_ADS_THUNK = createAsyncThunk("coverAds/fetch", async () => ({
+  img: {},
+  link: {}
+}));
+export const FETCH_ALL_ADS_THUNK = createAsyncThunk("allAdsContent/fetch", async () => ({}));

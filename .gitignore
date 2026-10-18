@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+ios/
+*.ipa
+.DS_Store
+__pycache__/
+AppPackage/.build/
+AppPackage/.swiftpm/

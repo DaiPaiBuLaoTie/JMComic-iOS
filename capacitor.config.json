@@ -1,0 +1,9 @@
+{
+  "appId": "io.github.daipaibulaotie.jmcomic",
+  "appName": "JMComic3",
+  "webDir": "dist",
+  "backgroundColor": "#ffffff",
+  "server": { "hostname": "localhost", "iosScheme": "capacitor" },
+  "ios": { "contentInset": "never", "allowsLinkPreview": false, "preferredContentMode": "mobile" },
+  "plugins": { "CapacitorHttp": { "enabled": true }, "CapacitorCookies": { "enabled": true } }
+}

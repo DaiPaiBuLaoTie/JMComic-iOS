@@ -1,0 +1,55 @@
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import CasinoIcon from "@mui/icons-material/Casino";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import LocalCafeIcon from "@mui/icons-material/LocalCafe";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useScrollToTop } from "../../Hooks";
+const MainTopBtn = (props: any) => {
+  const {
+    setting,
+    randomItem
+  } = props;
+  const scrollToTop = useScrollToTop();
+  const [showScrollUp, setShowScrollUp] = useState(false);
+
+  // 滾動切換icon
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setShowScrollUp(true);
+      } else {
+        setShowScrollUp(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  return <>
+      <></>
+      {showScrollUp ? <>
+          <button onClick={scrollToTop} className="w-14 h-14 rounded-full fixed bottom-[18rem] right-3 bg-nbk text-white z-40">
+            <ExpandLessIcon />
+          </button>
+          <Link to={`/comic/detail?id=${randomItem[0]?.id}`}>
+            <button className="w-14 h-14 rounded-full fixed bottom-[14rem] right-3 bg-nbk text-white z-40">
+              <CasinoIcon />
+            </button>
+          </Link>
+        </> : <>
+          <button className="w-14 h-14 rounded-full fixed bottom-[18rem] right-3 bg-og text-white z-40">
+            <Link to="/pay?utm_source=platform&utm_medium=app_coffeicon">
+              <LocalCafeIcon />
+            </Link>
+          </button>
+          <Link to="/daily" state={{
+        from: "/"
+      }}>
+            <button className="w-14 h-14 rounded-full fixed bottom-[14rem] right-3 bg-og text-white z-40">
+              <CalendarTodayIcon />
+            </button>
+          </Link>
+        </>}
+    </>;
+};
+export default MainTopBtn;

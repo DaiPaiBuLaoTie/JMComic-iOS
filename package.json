@@ -1,0 +1,61 @@
+{
+  "name": "jmcomic-ios",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/verify-source.mjs && node --test tests/policy.test.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "ios:prepare": "node scripts/prepare-ios.mjs"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/preferences": "8.0.1",
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.0",
+    "@mui/icons-material": "5.16.14",
+    "@mui/material": "5.16.14",
+    "@reduxjs/toolkit": "2.5.1",
+    "buffer": "6.0.3",
+    "classnames": "2.5.1",
+    "crypto-js": "4.2.0",
+    "framer-motion": "11.18.2",
+    "hls.js": "1.5.20",
+    "i18next": "23.16.8",
+    "i18next-browser-languagedetector": "8.0.2",
+    "jszip": "3.10.1",
+    "md5": "2.3.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-helmet": "6.1.0",
+    "react-i18next": "15.2.0",
+    "react-intersection-observer": "9.15.1",
+    "react-lazy-load-image-component": "1.6.3",
+    "react-pull-to-refreshify": "0.1.0",
+    "react-redux": "9.2.0",
+    "react-router-dom": "7.18.4",
+    "react-share": "5.2.1",
+    "react-virtuoso": "4.12.3",
+    "redux": "5.0.1",
+    "redux-thunk": "3.1.0",
+    "swiper": "12.2.0",
+    "@capacitor/share": "8.0.3"
+  },
+  "devDependencies": {
+    "@babel/parser": "7.26.7",
+    "@babel/traverse": "7.26.7",
+    "@babel/generator": "7.26.5",
+    "@babel/types": "7.26.7",
+    "@capacitor/cli": "8.5.3",
+    "esbuild": "0.25.0",
+    "playwright": "1.55.1",
+    "typescript": "5.7.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

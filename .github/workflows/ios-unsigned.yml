@@ -1,0 +1,74 @@
+name: Build unsigned JMComic iOS IPA
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jmcomic-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Policy and packaging tests
+        run: |
+          npm test
+          python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Build original interface
+        run: npm run build
+      - name: Browser behavior tests
+        run: |
+          npx playwright install chromium webkit
+          npm run test:browser
+      - name: Generate iOS shell
+        run: npm run ios:prepare
+      - name: SwiftLint
+        run: |
+          if ! command -v swiftlint >/dev/null; then brew install swiftlint; fi
+          swiftlint lint --strict --config .swiftlint.yml native AppPackage/Sources
+      - name: Build and launch in iPhone simulator
+        run: bash scripts/smoke-ios.sh
+      - name: Archive and validate unsigned device IPA
+        run: bash scripts/build-ios.sh
+      - name: Upload IPA, checksums and build metadata
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: JMComic-iOS-unsigned-${{ github.run_number }}
+          path: |
+            build/artifacts/*.ipa
+            build/artifacts/*.sha256
+            build/artifacts/build-info.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: JMComic-iOS-diagnostics-${{ github.run_number }}
+          path: |
+            build/logs/
+            build/*.xcresult
+            build/web-metafile.json
+          retention-days: 7
+      - name: Build summary
+        if: success()
+        run: |
+          echo 'Download JMComic-iOS-unsigned, extract the IPA, then sign it for your iPhone.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Physical arm64 iOS 15+. No signing certificate or provisioning profile is embedded.' >> "$GITHUB_STEP_SUMMARY"
+          cat build/artifacts/*.sha256 >> "$GITHUB_STEP_SUMMARY"

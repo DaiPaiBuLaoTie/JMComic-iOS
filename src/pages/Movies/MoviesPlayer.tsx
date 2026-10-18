@@ -1,0 +1,250 @@
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+import WestIcon from "@mui/icons-material/West";
+import { Button } from "@mui/material";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Keyboard, Scrollbar } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { FETCH_MOVIE_PLAYER_THUNK } from "../../actions/moviesPlayerAction";
+import HeaderAds from "../../components/Common/HeaderAds";
+import HlsPlayer from "../../components/Movies/HlsPlayer";
+import GlobalStore from "../../config/GlobalStore";
+import { useGlobalConfig } from "../../GlobalContext";
+import { useScrollToTop } from "../../Hooks";
+import { RESET_MOVIES_PLAYER } from "../../reducers/moviesPlayerFeature";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+const BASE_URL = GlobalStore.apiUrl || "";
+const MoviesPlayer = () => {
+  const {
+    config,
+    setConfig
+  } = useGlobalConfig();
+  const {
+    setting
+  } = config;
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation(); // 取得 URL search 參數
+  const {
+    id
+  } = useParams(); // 取得網址上的初始 id
+
+  const {
+    moviesDetail,
+    isLoading
+  } = useAppSelector(state => state.MoviesPlayer);
+  const searchParams = new URLSearchParams(location.search);
+  const videoType = searchParams.get("videoType") || "movie";
+  const searchQuery = searchParams.get("searchQuery") || "";
+  const video = moviesDetail?.video;
+  const related = moviesDetail?.related_videos;
+  const series = moviesDetail?.videoSeries;
+  const originalManga = moviesDetail?.originalManga;
+  const showAppButton = videoType !== "cos";
+  const {
+    t
+  } = useTranslation();
+  const scrollToTop = useScrollToTop();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const handlePlay = () => {
+    setIsPlaying(true);
+  };
+  useEffect(() => {
+    dispatch(RESET_MOVIES_PLAYER());
+    if (id && videoType) {
+      scrollToTop();
+      dispatch(FETCH_MOVIE_PLAYER_THUNK({
+        id,
+        video_type: videoType
+      }));
+    }
+  }, [id, videoType]);
+  return <div className="pb-40">
+      <div className="sticky top-safe z-50">
+        <HeaderAds />
+        <div className="h-14 bg-[#242424] text-white flex items-end p-2 py-3">
+          <Link to={`/movies?videoType=${videoType}&searchQuery=${encodeURIComponent(searchQuery)}`}>
+            <WestIcon className="text-3xl p-r-5" />
+          </Link>
+          <span className="pl-2 line-clamp-1">{video?.title}</span>
+        </div>
+      </div>
+      {/* 預覽圖與播放按鈕 */}
+      {!isPlaying && <div className="relative w-full">
+          {/* 預覽圖 */}
+
+          <div className="aspect-[16/9] overflow-hidden w-full">
+            {!imgLoaded && <div className="absolute inset-0 bg-black z-10" />}
+            <img src={video?.photo} alt="影片預覽圖" className={`w-full h-full object-cover object-center transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0"}`} onLoad={() => setImgLoaded(true)} />
+          </div>
+
+          {/* 圓形播放按鈕 */}
+          <button onClick={handlePlay} className="absolute m-auto w-16 h-16 bg-og rounded-full flex items-center justify-center shadow-lg" style={{
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)"
+      }}>
+            <PlayArrowIcon className="text-5xl text-white" />
+          </button>
+        </div>}
+
+      {/* 影片播放器 */}
+      {isPlaying && <HlsPlayer src={video?.video_src ?? ""} />}
+
+      <div className="p-3">
+        <div className="flex items-center justify-center gap-4 mb-4">
+          {showAppButton && <Button className="w-1/2 bg-nbk text-white text-base shadow-lg shadow-stone-700/50" onClick={e => {
+          e.preventDefault();
+          window.open("https://" + setting?.iqq_app_download_page, "_blank");
+        }}>
+              <span className="mr-2">APP看完整版</span>
+              <PlayCircleOutlineIcon className="align-middle text-4xl" />
+            </Button>}
+          <Button className={`${showAppButton ? "w-1/2" : "w-full"} bg-og text-white text-base shadow-lg shadow-stone-700/50`} onClick={e => {
+          e.preventDefault();
+          window.open(video?.full_url, "_blank");
+        }}>
+            <span className="mr-2">{t("movies.watch_full_video")}</span>
+            <PlayCircleOutlineIcon className="align-middle text-4xl" />
+          </Button>
+        </div>
+        <div className="flex flex-col gap-2 mb-4">
+          <p className="text-lg text-gray-500">
+            {video?.date && <span>{video?.date}．</span>}
+            {t("movies.views")}:{video?.view}
+          </p>
+
+          {videoType !== "cos" && <div className="flex flex-wrap gap-2 ">
+              <p className="text-lg self-center">{t("movies.studio")}：</p>
+              {video?.factory === "無資料" ? <div>{video?.factory}</div> : <div className="text-black px-3 py-1 rounded border border-gray-800 dark:text-white">
+                  <Link to={`/movies?videoType=${videoType}&searchQuery=${encodeURIComponent(video?.factory)}`}>
+                    {video?.factory}
+                  </Link>
+                </div>}
+            </div>}
+
+          {videoType === "cos" && <div className="">
+              <div className="flex flex-wrap gap-2 mb-4">
+                <p className="text-lg self-center">{t("movies.work")}：</p>
+                {video?.works === "無資料" ? <div>{video?.works}</div> : <div className="text-black px-3 py-1 rounded border border-gray-800 dark:text-white">
+                    <Link to={`/movies?videoType=${videoType}&searchQuery=${encodeURIComponent(video?.works)}`}>
+                      {video?.works}
+                    </Link>
+                  </div>}
+              </div>
+              <div className="flex flex-wrap gap-2 ">
+                <p className="text-lg self-center">{t("movies.character")}：</p>
+                {video?.characters === "無資料" ? <div>{video?.characters}</div> : <div className="text-black px-3 py-1 rounded border border-gray-800 dark:text-white">
+                    <Link to={`/movies?videoType=${videoType}&searchQuery=${encodeURIComponent(video?.characters)}`}>
+                      {video?.characters}
+                    </Link>
+                  </div>}
+              </div>
+            </div>}
+
+          {videoType === "movie" && <div className="flex flex-wrap gap-2 ">
+              <p className="text-lg">{t("movies.actress")}：</p>
+              {Array.isArray(video?.girls) && video?.girls.map((item: string, index: number) => item === "無資料" ? <span key={index} className="text-black dark:text-white">
+                      {item}
+                    </span> : <Link key={index} className="px-3 py-1 border-gray-800 border rounded text-sm" to={`/movies?videoType=${videoType}&searchQuery=${encodeURIComponent(item)}`}>
+                      {item}
+                    </Link>)}
+            </div>}
+
+          {videoType === "movie" && <div className="text-lg">
+              <p>
+                {t("movies.description")}：
+                <span className="text-gray-500">
+                  {video?.description?.trim() ? video.description : t("movies.no_data")}
+                </span>
+              </p>
+            </div>}
+        </div>
+
+        {/* 各類標籤 */}
+        {video?.tags && video?.tags.length > 0 && <div className="flex flex-wrap gap-2 mb-4">
+            <p className="text-lg">{t("movies.tag")}：</p>
+            {video?.tags.map((item: string, index: number) => <Link key={index} className="px-3 py-1 border-gray-800 border rounded text-sm" to={`/movies?videoType=${videoType}&searchQuery=${encodeURIComponent(item)}`}>
+                #{item}
+              </Link>)}
+          </div>}
+        {/* 系列影片區域 */}
+        {series && series.length > 0 && <div className="border border-gray-700 rounded ">
+            <div className="bg-gray-700 text-white p-3 text-lg">
+              <p>{t("movies.series_movies")}</p>
+              <small>
+                {series.length}
+                {t("movies.movies")}
+              </small>
+            </div>
+            <div className="p-3 h-60 ">
+              <ul className="overflow-scroll scrollbar-hidden h-full">
+                {series?.map((item: any, idx: number) => <li key={idx} onClick={() => {
+              navigate(`/movies/${item.vid}?videoType=${videoType}&searchQuery=${encodeURIComponent(searchQuery)}`, {
+                replace: true
+              });
+            }} className="flex items-center space-x-2 mb-5">
+                    <div className="aspect-[16/9] overflow-hidden w-1/2">
+                      <LazyLoadImage className="object-cover w-full h-full" src={setting?.img_host && setting.img_host + item.photo + item.date} alt={item.title} />
+                    </div>
+                    <p className="line-clamp-3 text-og w-1/2">{item.title}</p>
+                  </li>)}
+              </ul>
+            </div>
+          </div>}
+        {/* 系列漫畫區域 */}
+        {originalManga && originalManga.length > 0 && <div className="border border-gray-700 rounded ">
+            <div className="bg-gray-700 text-white p-3 text-lg">
+              <p>{t("movies.originalManga")}</p>
+              <small>
+                {originalManga.length}
+                {t("member.this_comic")}
+              </small>
+            </div>
+            <Swiper spaceBetween={8} slidesPerView={2.5} centeredSlides={false} slidesPerGroupSkip={3} grabCursor={true} keyboard={{
+          enabled: true
+        }} scrollbar={true} modules={[Keyboard, Scrollbar]} className="p-3">
+              {originalManga?.map((item: any, idx: number) => <SwiperSlide key={idx}>
+                  <li key={idx} onClick={() => {
+              navigate(`/comic/detail?id=${item.id}`, {
+                replace: true
+              });
+            }}>
+                    <LazyLoadImage className="object-cover w-full h-full" src={item.image} alt={item.id} />
+                    <p className="line-clamp-3 text-og p-1">{item.name}</p>
+                  </li>
+                </SwiperSlide>)}
+            </Swiper>
+          </div>}
+      </div>
+      {/* 相關影片 */}
+      {related && related.length > 0 && <div className="mb-4">
+          <p className="p-2">{t("movies.related_movies")}</p>
+          <Swiper spaceBetween={8} slidesPerView={2.5} centeredSlides={false} slidesPerGroupSkip={3} grabCursor={true} keyboard={{
+        enabled: true
+      }} scrollbar={true} modules={[Keyboard, Scrollbar]} className="p-2">
+            {related?.map((item: any, idx: number) => <SwiperSlide key={idx}>
+                <div className="cursor-pointer " onClick={() => {
+            navigate(`/movies/${item.id}?videoType=${videoType}&searchQuery=${encodeURIComponent(searchQuery)}`, {
+              replace: true
+            });
+          }}>
+                  <p className="aspect-[16/9] overflow-hidden">
+                    <LazyLoadImage className="w-full h-full object-cover rounded" placeholderSrc="/images/title-circle.webp" src={item.photo.startsWith("http") ? item.photo : `${BASE_URL}${item.photo}`} alt={item.title} />
+                  </p>
+                  <p className="line-clamp-2">{item.title}</p>
+                </div>
+              </SwiperSlide>)}
+          </Swiper>
+        </div>}
+      {/* 廣告區塊 */}
+      <></>
+
+      <></>
+    </div>;
+};
+export default MoviesPlayer;

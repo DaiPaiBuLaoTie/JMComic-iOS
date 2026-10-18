@@ -1,0 +1,223 @@
+import CloseIcon from "@mui/icons-material/Close";
+import SearchIcon from "@mui/icons-material/Search";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router-dom";
+import { FETCH_CREATOR_AUTHOR_THUNK, FETCH_CREATOR_WORK_THUNK } from "../../actions/creatorAction";
+import ClickPagination from "../../components/Common/ClickPagination";
+import HeaderAds from "../../components/Common/HeaderAds";
+import Loading from "../../components/Common/Loading";
+import TopBtn from "../../components/Common/TopBtn";
+import CreatorList from "../../components/Library/CreatorList";
+import SelectMenu from "../../components/Library/SelectMenu";
+import { useGlobalConfig } from "../../GlobalContext";
+import { GoBack, useScrollToTop } from "../../Hooks";
+import { CLEAR_CREATOR_LIST, LOAD_CREATOR_LIST } from "../../reducers/creatorFeature";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+const Library = () => {
+  const {
+    config
+  } = useGlobalConfig();
+  const {
+    setting,
+    paginationMode
+  } = config;
+  const {
+    t
+  } = useTranslation();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const scrollToTop = useScrollToTop();
+  const filterQuery = sessionStorage.getItem("libQuery") || "";
+  const libTab = sessionStorage.getItem("lib");
+  const libSource = sessionStorage.getItem("libSource") || "";
+  const searchInitialState = {
+    start: false,
+    query: filterQuery,
+    tab: Number(libTab) || 1,
+    page: Number(sessionStorage.getItem("libLoadMore")) || 1
+  };
+  const [searchConfig, setSearchConfig] = useState(searchInitialState);
+  const [filter, setFilter] = useState<any>({
+    start: false,
+    language: "",
+    source: libSource
+  });
+  const {
+    creatorAuthorList,
+    creatorWorkList,
+    isLoading,
+    isLoadMore
+  } = useAppSelector(state => state.creator);
+  const currentTab = searchConfig.tab === 1 ? creatorAuthorList : creatorWorkList;
+  const pageLimit = currentTab.total ? Math.ceil(currentTab.total / 30) : 1;
+  const hasNextPage = searchConfig.page < pageLimit && pageLimit > 1;
+
+  // GetList
+  const loadList = (isLoadMore: boolean = false, isRefreshing: boolean = false, page: number = searchConfig.page, query: string = searchConfig.query, tab: number = searchConfig.tab, time: number = 1000) => {
+    if (isRefreshing) {
+      sessionStorage.setItem("catLoadMore", "1");
+      setSearchConfig({
+        ...searchConfig,
+        start: false,
+        query,
+        tab,
+        page: 1
+      });
+      dispatch(CLEAR_CREATOR_LIST("creatorAuthorList"));
+    }
+    if (!isLoadMore) {
+      scrollToTop();
+    }
+    dispatch(LOAD_CREATOR_LIST({
+      isLoading: true,
+      isLoadMore,
+      isRefreshing
+    }));
+    setTimeout(() => {
+      if (tab === 1) {
+        dispatch(FETCH_CREATOR_AUTHOR_THUNK({
+          page,
+          search_query: query
+        }));
+      } else {
+        dispatch(FETCH_CREATOR_WORK_THUNK({
+          page: page,
+          search_value: query,
+          lang: filter.language,
+          source: filter.source
+        }));
+      }
+      if (query) {
+        sessionStorage.setItem("libQuery", query);
+        navigate(`/library?filter=${encodeURIComponent(query)}`);
+      } else {
+        sessionStorage.removeItem("libQuery");
+        setSearchConfig({
+          ...searchConfig,
+          start: false,
+          query: "",
+          tab,
+          page: page
+        });
+        navigate(`/library`);
+      }
+      sessionStorage.setItem("libLoadMore", String(page));
+      sessionStorage.setItem("libSource", filter.source);
+      setFilter({
+        ...filter,
+        start: false
+      });
+    }, time);
+  };
+
+  // list
+  useEffect(() => {
+    if (searchConfig.tab === 1 && !creatorAuthorList.list?.length || searchConfig.tab === 2 && !creatorWorkList.list?.length) {
+      loadList();
+    }
+  }, [creatorAuthorList.list?.length, creatorWorkList.list?.length]);
+
+  // lang & source
+  useEffect(() => {
+    if (filter.start) {
+      loadList();
+    }
+  }, [filter.start]);
+
+  // loading more
+  const handleLoadMore = () => {
+    if (!hasNextPage) return;
+    const loadMorePage = sessionStorage.getItem("libLoadMore");
+    const nextPage = Number(loadMorePage) + 1;
+    setSearchConfig({
+      ...searchConfig,
+      page: nextPage
+    });
+    loadList(true, false, nextPage);
+  };
+
+  // click pagination
+  const goToPage = (value: number) => {
+    const targetPage = Math.min(Math.max(value, 1), pageLimit);
+    setSearchConfig({
+      ...searchConfig,
+      page: targetPage
+    });
+    loadList(false, false, targetPage, searchConfig.query, searchConfig.tab, 0);
+  };
+  const handleClickTab = (tab: number) => {
+    loadList(false, false, 1, "", tab);
+    sessionStorage.setItem("lib", String(tab));
+    setSearchConfig({
+      ...searchConfig,
+      tab
+    });
+  };
+  return <div className="h-full dark:bg-bk">
+      {isLoading && <Loading />}
+      <div className="sticky top-safe z-50">
+        <HeaderAds />
+        <div className="h-14 bg-bbk text-white flex items-end p-2 py-3">
+          <GoBack back={sessionStorage.getItem("fromPage") || "/"} />
+          <p className="ml-4 text-2xl text-og">{t("library.forbidden_comic_library")}</p>
+        </div>
+      </div>
+      <div className="relative w-full flex justify-cneter my-4">
+        <input type="text" className="relative m-auto w-11/12 h-12 border-none outline-none rounded-full text-gy px-9 dark:bg-nbk" placeholder={t("search.search_keyword")} value={searchConfig.query} onChange={e => setSearchConfig((prev: any) => ({
+        ...prev,
+        query: e.target.value
+      }))} onKeyDown={e => {
+        if (e.key === "Enter") loadList(false, false, 1, (e.target as HTMLInputElement).value);
+      }} />
+        <SearchIcon className="absolute left-7 top-1/2 transform -translate-y-1/2 text-[#aaa] text-2xl stroke-gray-400" />
+        {searchConfig.query && <CloseIcon className="absolute right-8 top-1/2 transform -translate-y-1/2 text-[#aaa] text-xl stroke-gray-400" onClick={() => loadList(false, false, 1, "")} />}
+      </div>
+      <div className="w-full flex justify-around text-center text-lg text-gy">
+        {["創作者", "作品"].map((d, i) => <p key={d} className={`w-1/2 py-4 ${searchConfig.tab === i + 1 ? "bg-white text-og font-bold border-b-4 border-og dark:bg-nbk" : ""}`} onClick={() => handleClickTab(i + 1)}>
+            {d}
+          </p>)}
+      </div>
+      {searchConfig.tab === 1 ? <>
+          {creatorAuthorList.list?.length > 0 && creatorAuthorList.list.map((d: any, i: any) => <Link to={`/library/list?creatorId=${d.id}`} key={i}>
+                <div className={`relative bg-cover bg-center overflow-hidden px-4 py-2 my-2`} style={{
+          backgroundImage: `url(${setting?.img_host + d.background_image})`
+        }}>
+                  <div className="absolute inset-0 bg-gray-900 bg-opacity-60"></div>
+                  <div className="flex items-center relative z-10">
+                    <div className="w-2/6">
+                      <img src={setting?.img_host + d.author_avatar} alt={d.id} loading="lazy" onLoad={e => {
+                const target = e.target as HTMLImageElement;
+                target.style.opacity = "1";
+              }} onError={e => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/images/title-circle.webp";
+              }} className="w-32 object-cover rounded-xl" style={{
+                opacity: "0",
+                transition: "opacity 0.5s ease-in-out"
+              }} />
+                    </div>
+                    <div className="w-4/6">
+                      <p className="text-og text-2xl font-bold p-3">{d.author_name}</p>
+                      <span className="text-tgy p-3">
+                        {d.update_date}
+                        {t("library.update")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Link>)}
+        </> : <>
+          <SelectMenu t={t} filtersList={creatorWorkList.filters} filter={filter} setFilter={setFilter} />
+          <CreatorList list={creatorWorkList.list} setting={setting} />
+        </>}
+      <div className="flex flex-col justify-center items-center my-10 pb-40">
+        {currentTab.list?.length > 0 && isLoading && <img src="/images/loading.gif" alt="loading" width="80px" />}
+        {currentTab.list?.length > 0 && (paginationMode === "click" ? <ClickPagination pageLimit={pageLimit} page={searchConfig.page} onChange={goToPage} loading={isLoading} /> : hasNextPage ? <button onClick={() => handleLoadMore()} className="w-4/12 rounded-sm text-white p-2 bg-og shadow-lg shadow-stone-700/50">
+              {t("comic.load_more")}
+            </button> : <p className="text-center mt-10">{t("comic.no_more")}</p>)}
+      </div>
+      <TopBtn />
+    </div>;
+};
+export default Library;
