@@ -44,7 +44,9 @@ const Download = () => {
       const link = document.createElement("a");
       link.href = albumDownloadDetail.download_url;
       link.download = albumDownloadDetail.title;
+      document.body.appendChild(link);
       link.click();
+      link.remove();
     } else {
       setIsCorrect(false);
     }

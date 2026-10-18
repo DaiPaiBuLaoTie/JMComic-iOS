@@ -4,6 +4,7 @@ import { readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import CryptoJS from 'crypto-js';
+import JSZip from 'jszip';
 
 const root = path.resolve(import.meta.dirname, '..');
 await mkdir(path.join(root, 'build/logs'), { recursive: true });
@@ -26,12 +27,17 @@ const encrypt = (value, key) => CryptoJS.AES.encrypt(JSON.stringify(value),
 const hostDocument = encrypt({ Server: ['api.fixture.invalid'],
   jm3_Server: [['api.fixture.invalid', '線路1']] }, 'diosfjckwpqpdfjkvnqQjsik');
 const image = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420"><rect width="300" height="420" fill="#ddd"/><text x="30" y="100" fill="#555">Interface test</text></svg>';
+const zip = new JSZip();
+zip.file('fixture.txt', 'Interface download test');
+const zipData = await zip.generateAsync({ type: 'nodebuffer' });
 const fixtures = {
   setting: { ipcountry: 'TW', ad_cache_version: 99, img_host: 'https://img.fixture.invalid',
     main_web_host: 'https://site.fixture.invalid', app_img_shunt: [], version: '2.1.11' },
   promote: [{ id: '26', title: '界面验证', name: '界面验证', content: [{ id: '123', name: '界面验证示例', author: ['示例'], category: { title: '示例' } }] }],
   latest: { list: [], total: 1 },
   payment: { plans: [], pay_methods: [] },
+  download: { status: '1', title: 'interface-test.zip', fileSize: '1 KB',
+    download_url: 'https://files.fixture.invalid/interface-test.zip', img_url: 'https://img.fixture.invalid/cover.svg' },
   search: { total: 0, content: [] },
   comic_read: { id: '456', name: '阅读验证示例', scramble_id: '999999', images: [1, 2, 3].map(page =>
     ({ page, image: `https://img.fixture.invalid/page-${page}.svg` })) },
@@ -55,7 +61,9 @@ try {
         if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
         if (url.pathname.endsWith('newsvr-2025.txt')) return route.fulfill({ body: hostDocument, headers });
         if (url.hostname.startsWith('img.')) return route.fulfill({ contentType: 'image/svg+xml', body: image, headers });
-        const endpoint = url.pathname.split('/').pop();
+        if (url.hostname === 'files.fixture.invalid') return route.fulfill({ contentType: 'application/zip', body: zipData,
+          headers: { ...headers, 'content-disposition': 'attachment; filename="interface-test.zip"' } });
+        const endpoint = /\/album_download_2\//.test(url.pathname) ? 'download' : url.pathname.split('/').pop();
         const timestamp = (request.headers().tokenparam || `${Math.floor(Date.now() / 1000)},2.1.11`).split(',')[0];
         return route.fulfill({ contentType: 'application/json', headers,
           body: JSON.stringify({ code: 200, data: encrypt(fixtures[endpoint] ?? {}, timestamp + '185Hcomic3PAPP7R') }) });
@@ -111,6 +119,23 @@ try {
       assert.deepEqual(requests.filter(url => /ad_content|advertise|jmapp3apk|clarity|google-analytics|googletagmanager/.test(url)), []);
       await page.screenshot({ path: path.join(root, `build/logs/reader-${name}.png`) });
       console.log(`${name}: three-image reader, slider bounds, image jumps, and horizontal slides passed`);
+      await page.goto(`${origin}/comic/detail/download?id=123`);
+      await page.getByText('interface-test.zip', { exact: true }).waitFor();
+      const question = await page.locator('p').filter({ hasText: /^\d+\s*\+\s*\d+\s*=$/ }).innerText();
+      const answer = question.match(/\d+/g).map(Number).reduce((sum, value) => sum + value, 0);
+      await page.getByPlaceholder(translation.detail.enter_answer, { exact: true }).fill(String(answer));
+      await page.evaluate(() => document.addEventListener('click', event => {
+        const anchor = event.target.closest?.('a[download]');
+        if (anchor) window.__downloadLink = { connected: anchor.isConnected, filename: anchor.download };
+      }, true));
+      const pendingDownload = name === 'chromium' ? page.waitForEvent('download') :
+        page.waitForRequest(request => request.url() === 'https://files.fixture.invalid/interface-test.zip');
+      await page.getByRole('button', { name: translation.detail.download, exact: true }).click();
+      const download = await pendingDownload;
+      if (name === 'chromium') assert.equal(download.suggestedFilename(), 'interface-test.zip');
+      assert.deepEqual(await page.evaluate(() => window.__downloadLink), { connected: true, filename: 'interface-test.zip' });
+      assert.deepEqual(errors, []);
+      console.log(`${name}: original download page, captcha, and attached download-link dispatch passed`);
     } finally { await browser.close(); }
   }
 } finally { server.close(); }
