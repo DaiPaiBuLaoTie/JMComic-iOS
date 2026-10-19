@@ -99,7 +99,11 @@ try {
       await page.screenshot({ path: path.join(root, `build/logs/home-${name}.png`), fullPage: true });
       console.log(`${name}: original home, startup selection, age confirmation, stale ad caches, and no remote-code requests passed`);
       await page.waitForLoadState('networkidle');
-      await page.goto(`${origin}/comic/detail/read?id=123&readId=456&episode=0&subEpisode=1`);
+      // Follow SPA route changes, as the app does, without tearing down an active document.
+      await page.evaluate(() => {
+        history.pushState({}, '', '/comic/detail/read?id=123&readId=456&episode=0&subEpisode=1');
+        dispatchEvent(new PopStateEvent('popstate'));
+      });
       await page.getByText('阅读验证示例', { exact: true }).waitFor();
       const slider = page.getByRole('slider');
       await slider.waitFor();
@@ -122,7 +126,10 @@ try {
       await page.screenshot({ path: path.join(root, `build/logs/reader-${name}.png`) });
       console.log(`${name}: three-image reader, slider bounds, image jumps, and horizontal slides passed`);
       await page.waitForLoadState('networkidle');
-      await page.goto(`${origin}/comic/detail/download?id=123`);
+      await page.evaluate(() => {
+        history.pushState({}, '', '/comic/detail/download?id=123');
+        dispatchEvent(new PopStateEvent('popstate'));
+      });
       await page.getByText('interface-test.zip', { exact: true }).waitFor();
       const question = await page.locator('p').filter({ hasText: /^\d+\s*\+\s*\d+\s*=$/ }).innerText();
       const answer = question.match(/\d+/g).map(Number).reduce((sum, value) => sum + value, 0);
