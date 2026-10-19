@@ -144,19 +144,19 @@ export const GlobalConfigProvider = ({
   }, []);
   useEffect(() => {
     if (savedDarkMode) {
-      setConfig({
-        ...config,
+      setConfig(previous => ({
+        ...previous,
         darkMode: savedDarkMode === "true"
-      });
+      }));
     } else {
       localStorage.setItem("darkMode", "false");
     }
     if (langStorage) {
-      setConfig({
-        ...config,
+      setConfig(previous => ({
+        ...previous,
         langCode: langStorage,
         lang: langStorage === "1" ? "CN" : "TW"
-      });
+      }));
     } else {
       localStorage.setItem("langCode", "0");
     }

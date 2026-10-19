@@ -75,6 +75,8 @@ try {
         localStorage.setItem('memberInfo', JSON.stringify({ ad_free: false }));
         localStorage.setItem('localVersion', '999.0.0');
         localStorage.setItem('paginationMode', 'click');
+        localStorage.setItem('darkMode', 'false');
+        localStorage.setItem('langCode', '0');
         localStorage.setItem('dontShowExpiry', String(Date.now() + 86400000));
       });
       await page.goto(origin);
