@@ -57,7 +57,8 @@ try {
         if (url.origin === origin) return route.continue();
         requests.push(url.href);
         const headers = { 'access-control-allow-origin': origin, 'access-control-allow-credentials': 'true',
-          'access-control-allow-headers': 'tokenparam,token,authorization,cookie,content-type' };
+          'access-control-allow-headers': 'tokenparam,token,authorization,cookie,content-type',
+          'access-control-allow-methods': 'GET,POST,OPTIONS' };
         if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
         if (url.pathname.endsWith('newsvr-2025.txt')) return route.fulfill({ body: hostDocument, headers });
         if (url.hostname.startsWith('img.')) return route.fulfill({ contentType: 'image/svg+xml', body: image, headers });
@@ -97,6 +98,7 @@ try {
       assert.deepEqual(errors, []);
       await page.screenshot({ path: path.join(root, `build/logs/home-${name}.png`), fullPage: true });
       console.log(`${name}: original home, startup selection, age confirmation, stale ad caches, and no remote-code requests passed`);
+      await page.waitForLoadState('networkidle');
       await page.goto(`${origin}/comic/detail/read?id=123&readId=456&episode=0&subEpisode=1`);
       await page.getByText('阅读验证示例', { exact: true }).waitFor();
       const slider = page.getByRole('slider');
@@ -119,6 +121,7 @@ try {
       assert.deepEqual(requests.filter(url => /ad_content|advertise|jmapp3apk|clarity|google-analytics|googletagmanager/.test(url)), []);
       await page.screenshot({ path: path.join(root, `build/logs/reader-${name}.png`) });
       console.log(`${name}: three-image reader, slider bounds, image jumps, and horizontal slides passed`);
+      await page.waitForLoadState('networkidle');
       await page.goto(`${origin}/comic/detail/download?id=123`);
       await page.getByText('interface-test.zip', { exact: true }).waitFor();
       const question = await page.locator('p').filter({ hasText: /^\d+\s*\+\s*\d+\s*=$/ }).innerText();
